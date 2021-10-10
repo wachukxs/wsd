@@ -64,7 +64,7 @@
         </section>
         <div class="container-fluid">
 
-            <div class="card">
+            <div class="card mt-5">
                 
                 <div class="card-body">
                     <h5 class="card-title">Request completion stats</h5>
@@ -75,7 +75,7 @@
                             <p>Not surported.</p>
                         </canvas>
                         <p class="card-text pt-5 p-3" id="doughnut_chart_004_parpgraph">
-                            A straight line means it takes same amount for the request to complete for all services
+                            
                             <!-- ideally would have the tooltip showing the amount of time the request took to complete. -->
                         </p>
                     </div>
@@ -88,7 +88,7 @@
             </div>
 
 
-            <div class="card">
+            <div class="card mt-5">
                 
                 <div class="card-body">
                     <h5 class="card-title">HTTP status overview</h5>
@@ -110,7 +110,7 @@
             </div>
 
 
-            <div class="card">
+            <div class="card mt-5">
                 
                 <div class="card-body">
                     <h5 class="card-title">Authentication overview</h5>
@@ -135,6 +135,10 @@
         
         
     </main>
+
+    <footer id="foot">
+        
+    </footer>
 
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
@@ -524,7 +528,7 @@
             const ctx004 = document.getElementById('doughnut_chart_004').getContext('2d');
             const chart004 = new Chart(ctx004, config004);
 
-            // document.getElementById('doughnut_chart_004_parpgraph').innerText = `${flattenSum(Object.values(extractUsedAuthStatus())).map((v, i) => v + '% of host services ' + Object.keys(extractUsedAuthStatus())[i] ).join(', and ')}.`;
+            document.getElementById('doughnut_chart_004_parpgraph').innerText = `A straight line means it takes same amount for the request to complete for all services`;
 
         }
         
@@ -562,8 +566,15 @@
 
                 console.log('Hi. Just drew the charts. Look at them, not me. :)');
             }).catch((err) => {
-                // also use bootstrap alerts
-                document.getElementById('intro-paragraph').textContent = 'An error happened while fetching data. Please reload page.'
+                // document.getElementById('intro-paragraph').textContent = 'An error happened while fetching data. Please reload page.'
+                document.getElementById('foot').appendChild(
+                    `<div class="alert-div container container-fluid position-fixed bottom-0 end-0">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Ooops!</strong> An error happened while fetching data. Please reload page.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>`
+                )
                 console.log('Ouch. An error happened while fetching data, and drawing charts', err) // todo: maybe remove the loader ... really shd show alerts
             });
         } else {
