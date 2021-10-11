@@ -138,7 +138,7 @@ module.exports = {
             res.send(serviceReportRequest.data)
         } catch (error) {
             console.error('an error occured', error)
-            res.send({message: 'an error occured'}) // ??
+            res.sendStatus(500) // res.status(500).send({message: 'an error occured'}) // ??
         }
 
         
