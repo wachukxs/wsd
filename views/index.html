@@ -66,7 +66,7 @@
                 
                 <div class="card-body">
                     <h5 class="card-title">Request completion stats</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">How long it took request to be compeleted. Showing the average of 16 samples so the chart isn't congested.</h6>
+                    <h6 class="card-subtitle mb-2 text-muted">How long it took request to be compeleted. Showing the average of 16 samples so the chart isn't congested. Click 'Refresh' to pick 16 random services.</h6>
 
                     <button type="button" id="refresh-chart-1" class="btn btn-primary">Refresh</button>
                     
@@ -492,6 +492,12 @@
                                 display: true,
                                 text: 'Timestamp'
                             },
+                            ticks: {
+                                source: 'data',
+                                callback: function(value, index, values) {
+                                    return new Date(value).toISOString() ; // covert to time
+                                }
+                            },
                             // min: new Date(extractRequestedAt()[0].y).getTime() - 10000,
                             // max: new Date(extractCompletedAt().at(-1).y).getTime() + 10000,
 
@@ -499,7 +505,16 @@
                             // suggestedMax: new Date(extractCompletedAt().at(-1).y).getTime() ,
                         },
                         
-                    }
+                    },
+                    plugins: {
+                        
+                        tooltip: {
+                            // Disable the on-canvas tooltip
+                            enabled: false, // false, so we can use an external tooltip
+                            position: 'nearest',
+                            external: externalTooltipHandler
+                        }
+                    },
                 },
             };
 
