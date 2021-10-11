@@ -449,16 +449,18 @@
                     {
                         label: 'Request Time',
                         data: extractRequestedAt().slice(0, 17), // [{x: "e32232", y: 23}], // number of times the status appeared.
-                        backgroundColor: '#84f5b7',
+                        fill: false,
+                        cubicInterpolationMode: 'monotone',
+                        tension: 0.4,
                         borderColor: 'green',
-                        fill: '-1'
                     },
                     {
                         label: 'Completion Time',
                         data: extractCompletedAt().slice(0, 17), // [{x: "e32232", y: 23}], // number of times the status appeared.
-                        backgroundColor: '#f8a5a5',
+                        fill: false,
+                        // cubicInterpolationMode: 'monotone',
+                        tension: 0.4,
                         borderColor: 'blue',
-                        fill: '-1'
                     }
                 ]
             };
@@ -466,73 +468,38 @@
                 type: 'line',
                 data: data004,
                 options: {
+                    // spanGaps: 1000, // milliseconds
                     responsive: true,
                     scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: false
+                            }
+                        },
                         y: {
-                            // parsing: false,
-                            stacked: true,
-                            // // https://www.chartjs.org/docs/next/axes/cartesian/time.html#ticks-source
-                            ticks: { // https://stackoverflow.com/a/67491966/9259701
-                                source: 'data',
-                                // Include a dollar sign in the ticks
-                                callback: function(value, index, values) {
-                                    return new Date(value).toISOString() ; // covert to time
-                                }
-                            },
-                            // type: 'time', // ...
+                            // type: 'time',
                             time: {
-                                unit: 'millisecond', // millisecond, not minute, or second
-                                stepSize: 10000000000,
+                                unit: 'millisecond',
                                 displayFormats: {
                                     millisecond: 'HH:MM:ss.SSS aaaa', // h:mm:ss.SSS aaaa
                                 },
-                                // parsing x data before chart.js use it
-                                parser: function(dt){
-                                    return new Date(dt).getTime();
-                                },
-
+                                // Luxon format string
+                                tooltipFormat: 'HH:MM:ss.SSS aaaa', // HH:mm:ss ZZZ'
                             },
-                            // // offset: true,
-                            // suggestedMin: new Date(extractRequestedAt()[0].y).getTime() - 500,
-                            // suggestedMax: new Date(extractCompletedAt().at(-1).y).getTime() + 4000,
-                            stepSize: 10000000000,
-                            min: extractRequestedAt()[0].y - 1000000000000,
-                            // max: extractCompletedAt().at(-1).y, // https://stackoverflow.com/a/61361649/9259701
-                            // // beginAtZero: true
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Timestamp'
+                            },
+                            // min: new Date(extractRequestedAt()[0].y).getTime() - 10000,
+                            // max: new Date(extractCompletedAt().at(-1).y).getTime() + 10000,
+
+                            // suggestedMin: new Date(extractRequestedAt()[0].y).getTime() ,
+                            // suggestedMax: new Date(extractCompletedAt().at(-1).y).getTime() ,
                         },
-                        // adapters: {
-                        //     date: {
-                        //         locale: 'de',
-                        //         // locale: 'en-US',
-                        //         zone: 'UTC+1',
-                        //         // zone: "America/Denver"
-                        //     },
-                        //     time: {
-                        //         unit: 'minute', // millisecond
-                        //         displayFormats: {
-                        //             hour: "y-LL-dd HH:mmZZZ"
-                        //         }
-                        //     }
-                        // }
-                    },
-                    plugins: {
-                        filler: {
-                            propagate: false
-                        },
-                        'samples-filler-analyser': {
-                            target: 'chart-analyser'
-                        },
-                        tooltip: {
-                            // Disable the on-canvas tooltip
-                            enabled: false, // false, so we can use an external tooltip
-                            position: 'nearest',
-                            external: externalTooltipHandler
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                    },
-                    
+                        
+                    }
                 },
             };
 
