@@ -220,6 +220,10 @@
         // should I make uncompliant service reports complaint ???
 
 
+        function shortenSentence(s) {
+            let max = 25 // new max lenght we want to display
+            return s.length > max ? s.substring(0, (max / 2) - 1) + '...' + s.substring(s.length - (max / 2) + 2, s.length) : s
+        }
         
 
         function drawZoomableSunburstChart() {
@@ -361,9 +365,9 @@
                 .text(d => {
                     // console.log('what\'s d?', d);
                     if (Array.isArray(d.data)) {
-                        return d.data[0]
+                        return shortenSentence(d.data[0])
                     } else {
-                        return d.data.host.name
+                        return shortenSentence(d.data.host.name)
                     }
                     // useful for fishing our un-compliant service report
                     // try {
