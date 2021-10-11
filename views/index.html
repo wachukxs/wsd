@@ -155,17 +155,13 @@
 
     <script>
 
-
+        let _baseURL = 'http://localhost:8088'
+        if (window.location.host === "wsd-service-report.herokuapp.com") {
+            _baseURL = "https://wsd-service-report.herokuapp.com"
+        }
         
 
-
-        // should we do a async/await ??
-
-        // the response data is quite large, but we can't fetch in batches ...
-
-        // should we do this? https://www.interlinksoftware.com/service-visualization-dashboards
-
-        // we should also do helper functions to extract data from server_reponse ... SOLID principles.
+        // maybe also do helper functions to extract data from server_reponse ... SOLID principles.
         let server_reponse;
 
 
@@ -549,7 +545,7 @@
 
         // let's cache result. only fetch new data if it's older than 15 mins // a slick update would be auto updating based on custom set time
         if(!sessionStorage.getItem('wsd-service-reports') || (sessionStorage.getItem('wsd-service-reports') && Date.now() - new Date(JSON.parse(sessionStorage.getItem('wsd-service-reports'))["completed_at"]).getTime() > 900000) ) {
-            fetch('http://localhost:8088/service-report') // call live url
+            fetch(_baseURL + '/service-report') // call live url
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

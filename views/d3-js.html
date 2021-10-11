@@ -189,6 +189,10 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
     <script>
+        let _baseURL = 'http://localhost:8088'
+        if (window.location.host === "wsd-service-report.herokuapp.com") {
+            _baseURL = "https://wsd-service-report.herokuapp.com"
+        }
         let server_reponse
 
         function extractCompliantReports() {
