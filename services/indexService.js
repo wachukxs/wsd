@@ -10,9 +10,11 @@ const axios = require('axios');
  * 
  * this works for this use case because the auth token is a short string (takes up very little memory)
  * and has a somewhat long TTL
+ * 
+ * https://www.mojotech.com/blog/node-js-memory-cache/
  */
 class DataCache {
-    constructor(fetchFunction, minutesToLive = 10) {
+    constructor(fetchFunction, minutesToLive = 7200) {
       this.millisecondsToLive = minutesToLive * 60 * 1000;
       this.fetchFunction = fetchFunction;
       this.cache = null;
@@ -22,7 +24,8 @@ class DataCache {
       this.fetchDate = new Date(0);
     }
     isCacheExpired() {
-      return (this.fetchDate.getTime() + this.millisecondsToLive) < new Date().getTime();
+        console.log('checking if cached is expired');
+        return (this.fetchDate.getTime() + this.millisecondsToLive) < new Date().getTime();
     }
     getData() {
       if (!this.cache || this.isCacheExpired()) {
@@ -31,10 +34,11 @@ class DataCache {
           .then((data) => {
           this.cache = data;
           this.fetchDate = new Date();
+          this.millisecondsToLive = parseInt(data.expires_in) * 60 * 1000 // safe bet if it changes.
           return data;
         });
       } else {
-        console.log('cache hit');
+        console.log('cache hit - got access_token from cache');
         return Promise.resolve(this.cache);
       }
     }
@@ -46,6 +50,23 @@ class DataCache {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// part 0
+const getWSDAuth = () => {
+    return axios.post('https://staging-authentication.wallstreetdocs.com/oauth/token', {
+        "grant_type":  "client_credentials",
+        "client_id": "coding_test",
+        "client_secret": "bwZm5XC6HTlr3fcdzRnD" // should come from .env idealy
+    }, {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=UTF-8'
+        }
+    })
+    .then((result) => result.data);
+}
+
+const authCache = new DataCache(getWSDAuth);
 
 module.exports = {
     async serveIndexPage (req, res) {
@@ -69,42 +90,28 @@ module.exports = {
     async getServiceReport(req, res) {
 
         try {
-            // part 0
-            const getWSDAuth = () => {
-                const url = 'https://api.bls.gov/publicAPI/v2/timeseries/data/LNS14000000';
-                return axios.post('https://httpbin.org/post', {
-                    "grant_type":  "client_credentials",
-                    "client_id": "coding_test",
-                    "client_secret": "bwZm5XC6HTlr3fcdzRnD" // should come from .env idealy
-                }, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    }
-                })
-                .then((result) => result.data);
-            }
-
-            // part 1  // returns 200 http status if successful 
             
 
-            const authResponse = await axios.post('https://staging-authentication.wallstreetdocs.com/oauth/token', {
-                    "grant_type":  "client_credentials",
-                    "client_id": "coding_test",
-                    "client_secret": "bwZm5XC6HTlr3fcdzRnD" // should come from .env idealy
-                }, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    }
-            })
+            // part 1  // returns 200 http status if successful 
+ 
+            // const authResponse = await axios.post('https://staging-authentication.wallstreetdocs.com/oauth/token', {
+            //         "grant_type":  "client_credentials",
+            //         "client_id": "coding_test",
+            //         "client_secret": "bwZm5XC6HTlr3fcdzRnD" // should come from .env idealy
+            //     }, {
+            //         headers: {
+            //             'Accept': 'application/json',
+            //             'Content-Type': 'application/json; charset=UTF-8'
+            //         }
+            // })
 
-            console.log('gotten auth')
+            // console.log('gotten auth')
             // authResponse = JSON.parse(authResponse.data)
 
-            // const authCache = new DataCache(getWSDAuth);
-            // const authResponse2 = await authCache.getData() // 7200 is probably minutes
+            
+            const authResponse2 = await authCache.getData() // pick access_token from cache to reduct number of network calls
             // don't do another auth call if the previous one hasn't expired.
+            console.log('gotten cached auth')
 
 
             // part 2 // returns 202 http status if successful
@@ -113,12 +120,12 @@ module.exports = {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json; charset=UTF-8',
-                    'Authorization': authResponse.data.token_type + ' ' + authResponse.data.access_token
+                    'Authorization': authResponse2.token_type + ' ' + authResponse2.access_token // authResponse.data.token_type + ' ' + authResponse.data.access_token
                 }
             })
             console.log('gotten job id')
 
-            await delay(5000) // wait 5 secs, enough time for the report to be ready
+            await delay(5000) // wait 5 secs, JUST enough time for the report to be ready
 
             // part 3, // returns 200 http status if successful
             const serviceReportRequest = await axios.get('https://staging-gateway.priipcloud.com/api/v2.0/gateway/reports/status/service/' + jobIdResponse.data.job_id, 
@@ -126,7 +133,7 @@ module.exports = {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json; charset=UTF-8',
-                    'Authorization': authResponse.data.token_type + ' ' + authResponse.data.access_token
+                    'Authorization': authResponse2.token_type + ' ' + authResponse2.access_token // authResponse.data.token_type + ' ' + authResponse.data.access_token
                 }
             })
             console.log('gotten service report')

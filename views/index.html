@@ -548,7 +548,7 @@
         }
 
         // let's cache result. only fetch new data if it's older than 15 mins // a slick update would be auto updating based on custom set time
-        if(!sessionStorage.getItem('wsd-service-reports') || (sessionStorage.getItem('wsd-service-reports') && Date.now() - new Date(JSON.parse(sessionStorage.getItem('wsd-service-reports'))["completed_at"]).getTime() > (900000 + 900000 + 900000)) ) {
+        if(!sessionStorage.getItem('wsd-service-reports') || (sessionStorage.getItem('wsd-service-reports') && Date.now() - new Date(JSON.parse(sessionStorage.getItem('wsd-service-reports'))["completed_at"]).getTime() > 900000) ) {
             fetch('http://localhost:8088/service-report') // call live url
             .then(response => {
                 if (!response.ok) {
