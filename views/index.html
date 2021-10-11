@@ -66,7 +66,9 @@
                 
                 <div class="card-body">
                     <h5 class="card-title">Request completion stats</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">How long it took request to be compeleted.</h6>
+                    <h6 class="card-subtitle mb-2 text-muted">How long it took request to be compeleted. Showing the average of 16 samples so the chart isn't congested.</h6>
+
+                    <button type="button" id="refresh-chart-1" class="btn btn-primary">Refresh</button>
                     
                     <div>
                         <canvas id="doughnut_chart_004">
@@ -165,6 +167,10 @@
 
         // helper functions:
 
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
         const getOrCreateTooltip = (chart) => {
             let tooltipEl = chart.canvas.parentNode.querySelector('div');
 
@@ -240,7 +246,7 @@
                     const td = document.createElement('td');
                     td.style.borderWidth = 0;
 
-                    const text = document.createTextNode(body + '%');
+                    const text = document.createTextNode(body[0].includes('Time') ? body[0].slice(0, body[0].indexOf(':')) + ': ' + new Date(parseInt(body[0].replace(/\D/g, ''))).toISOString() : body + '%');
 
                     td.appendChild(span);
                     td.appendChild(text);
@@ -250,7 +256,6 @@
 
                 const tableRoot = tooltipEl.querySelector('table');
 
-                console.log('tableRoot', tableRoot);
                 // Remove old children
                 while (tableRoot.firstChild) {
                     tableRoot.firstChild.remove();
@@ -425,25 +430,32 @@
             document.getElementById('doughnut_chart_003_parpgraph').innerText = `${flattenSum(Object.values(extractAuthenticatedHosts())).map((v, i) => v + '% of host services use ' + Object.keys(extractAuthenticatedHosts())[i] ).join(', and ')}.`;
         }
 
-        // ---- 3 doughtnut // needs works. seems oauth2 isn't seldomly use, and can be used with jwt
+        function updateCompletionStatChart(_chart) {
+            let _randomNumber = getRandomInt(server_reponse.service_reports.length - 16)
 
+            _chart.data.labels = extractServiceHostNames().slice(_randomNumber, _randomNumber + 16)
+            _chart.data.datasets[0].data = extractRequestedAt().slice(_randomNumber, _randomNumber + 16)
+            _chart.data.datasets[1].data = extractCompletedAt().slice(_randomNumber, _randomNumber + 16)
+
+            _chart.update();
+        }
         // should have an update button to increase the number of viewed services
         function drawCompletionStat() {
             const data004 = {
                 // should be names of services
-                labels: extractServiceHostNames().splice(0, 17), // .splice(0, 7) mapping function to return names
+                labels: extractServiceHostNames().slice(0, 17), // .splice(0, 7) mapping function to return names
                 
                 datasets: [
                     {
                         label: 'Request Time',
-                        data: extractRequestedAt().splice(0, 17), // [{x: "e32232", y: 23}], // number of times the status appeared.
+                        data: extractRequestedAt().slice(0, 17), // [{x: "e32232", y: 23}], // number of times the status appeared.
                         backgroundColor: '#84f5b7',
                         borderColor: 'green',
                         fill: '-1'
                     },
                     {
                         label: 'Completion Time',
-                        data: extractCompletedAt().splice(0, 17), // [{x: "e32232", y: 23}], // number of times the status appeared.
+                        data: extractCompletedAt().slice(0, 17), // [{x: "e32232", y: 23}], // number of times the status appeared.
                         backgroundColor: '#f8a5a5',
                         borderColor: 'blue',
                         fill: '-1'
@@ -509,6 +521,12 @@
                         },
                         'samples-filler-analyser': {
                             target: 'chart-analyser'
+                        },
+                        tooltip: {
+                            // Disable the on-canvas tooltip
+                            enabled: false, // false, so we can use an external tooltip
+                            position: 'nearest',
+                            external: externalTooltipHandler
                         }
                     },
                     interaction: {
@@ -523,6 +541,12 @@
             const chart004 = new Chart(ctx004, config004);
 
             document.getElementById('doughnut_chart_004_parpgraph').innerText = `A straight line means it takes same amount for the request to complete for all services`;
+
+            document.getElementById('refresh-chart-1').addEventListener('click', (evt) => {
+                console.log('Refreshing');
+
+                updateCompletionStatChart(chart004)
+            })
 
         }
         
