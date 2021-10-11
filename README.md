@@ -12,7 +12,7 @@ My charts shows:
 * the percentage of the different http response status we got from the report
 * I also tried to show the web of network calls between downstream hosts and upstream hosts. I used 2 different views: a sunburst and tree charts (3 charts in total)... to give a view of how the reports are gathered. This can make us prioties certain things like what servers need more upgrades, or attention. And I think this is where I would love to dig in more if I had more time. I wanted to know which web hosts were failing or not implementing the service report API.
 
-I started out using chart.js for it's simplicity. I used it for pie charts because it's a basic chart and chart.js is sufficient enough for that. I had to use D3 because it's richer in features and interactivity. It has smooth animations and interactions that double as filtering too.
+I started out using chart.js for it's simplicity. I used it for pie charts because it's a basic chart and chart.js is sufficient enough for that. I had to use D3 because it's richer in features and interactivity. It has smooth animations and interactions that double as filtering too. I also made the sentences with the chart.js charts dynamically generated and explanatory.
 
 I've made sure to look out for accessibility and mobile responsiveness for the charts. By adding aria labels and roles, making sure the view port of the canvas, and svg chart always fits the screen. I also added fallback text for broswers that don't support the canvas HTML element used to draw some of the charts. One of my chart.js charts have patterns for easy distinction to account for color blindness. The same can be done for the D3 charts but I was pressed for time :). It's just a proof of concept.
 
